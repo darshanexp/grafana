@@ -197,7 +197,6 @@ func TestGmetricsdExecutorConstructor(t *testing.T) {
 						RefId: "A",
 						DataSource: &models.DataSource{
 							Url:               "http://test",
-							Database:          "[test-index-]YYYY.MM.DD",
 							Id:                1,
 							JsonData:          jsonData,
 							BasicAuth:         true,
