@@ -41,6 +41,7 @@ func parseSubQueryResults(parentAggregationKey string, bucketlist BucketList, pr
 		}
 
 		metricKey := ""
+		docCount := 0.0
 		var valueRow [2]null.Float
 		for key, value := range aggregations {
 			switch value.(type) {
@@ -55,8 +56,7 @@ func parseSubQueryResults(parentAggregationKey string, bucketlist BucketList, pr
 				if key == "key" {
 					valueRow[1] = parseValue(value.(float64))
 				} else if key == "doc_count" {
-					metricKey = key
-					valueRow[0] = parseValue(value.(float64))
+					docCount = value.(float64)
 				}
 			case map[string]interface{}:
 				valueMap := value.(map[string]interface{})
@@ -101,6 +101,16 @@ func parseSubQueryResults(parentAggregationKey string, bucketlist BucketList, pr
 				}
 			}
 		}
+
+		if metricKey == "" {
+			name := "doc_count"
+
+			if _, ok := timeSeries[name]; !ok {
+				timeSeries[name] = make(tsdb.TimeSeriesPoints, 0)
+			}
+			valueRow[1] = parseValue(docCount)
+			timeSeries[name] = append(timeSeries[name], valueRow)
+		}
 	}
 
 	return timeSeries, nil
@@ -126,11 +136,13 @@ func parseQueryResult(response []byte, preferredNames NameMap, resultFilter Filt
 	}
 
 	for id, series := range timeSeries {
-		ts := &tsdb.TimeSeries{
-			Name:   id,
-			Points: series,
+		if len(timeSeries) > 0 && id != "doc_count" {
+			ts := &tsdb.TimeSeries{
+				Name:   id,
+				Points: series,
+			}
+			queryRes.Series = append(queryRes.Series, ts)
 		}
-		queryRes.Series = append(queryRes.Series, ts)
 	}
 
 	return queryRes, nil
