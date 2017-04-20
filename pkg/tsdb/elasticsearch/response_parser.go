@@ -108,7 +108,7 @@ func parseSubQueryResults(parentAggregationKey string, bucketlist BucketList, pr
 			if _, ok := timeSeries[name]; !ok {
 				timeSeries[name] = make(tsdb.TimeSeriesPoints, 0)
 			}
-			valueRow[1] = parseValue(docCount)
+			valueRow[0] = parseValue(docCount)
 			timeSeries[name] = append(timeSeries[name], valueRow)
 		}
 	}
@@ -136,7 +136,7 @@ func parseQueryResult(response []byte, preferredNames NameMap, resultFilter Filt
 	}
 
 	for id, series := range timeSeries {
-		if len(timeSeries) > 0 && id != "doc_count" {
+		if len(timeSeries) > 0 && id != "doc_count" || len(timeSeries) == 1 && id == "doc_count" {
 			ts := &tsdb.TimeSeries{
 				Name:   id,
 				Points: series,

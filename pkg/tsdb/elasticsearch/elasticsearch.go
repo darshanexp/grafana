@@ -129,7 +129,6 @@ func (e *ElasticsearchExecutor) buildRequest(queryInfo *tsdb.Query, timeRange *t
 		return nil, err
 	}
 
-	fmt.Printf("ESQuery: %#v\n", esRequestJSON)
 	interval := tsdb.CalculateInterval(timeRange)
 
 	esRequestJSON = strings.Replace(esRequestJSON, "$interval", interval.Text, 1)

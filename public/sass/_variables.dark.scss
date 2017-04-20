@@ -23,6 +23,12 @@ $gray-7:           #fbfbfb;
 
 $white:            #fff;
 
+//----------------------------
+// MDL Colors (Riot)
+$navbar-color: $dark-3;
+$navbar-text-color: $gray-3;
+$navbarButtonBackgroundBorder: lighten($navbar-color, 10%);
+
 // Accent colors
 // -------------------------
 $blue:                  #33B5E5;
@@ -208,17 +214,17 @@ $horizontalComponentOffset:       180px;
 $wellBackground:                  #131517;
 
 $navbarHeight:                    52px;
-$navbarBackgroundHighlight:       $dark-3;
-$navbarBackground:                $dark-3;
+$navbarBackgroundHighlight:       $navbar-color;
+$navbarBackground:                $navbar-color;
 $navbarBorder:                    1px solid $body-bg;
 
-$navbarText:                      $gray-4;
-$navbarLinkColor:                 $gray-4;
-$navbarLinkColorHover:            $white;
-$navbarLinkColorActive:           $navbarLinkColorHover;
+$navbarText:                      $navbar-text-color;
+$navbarLinkColor:                 $navbar-text-color;
+$navbarLinkColorHover:            $navbar-text-color;
+$navbarLinkColorActive:           $navbar-text-color;
 $navbarLinkBackgroundHover:       transparent;
-$navbarLinkBackgroundActive:      $navbarBackground;
-$navbarBrandColor:                $link-color;
+$navbarLinkBackgroundActive:      $dark-1;
+$navbarBrandColor:                $navbar-text-color;
 $navbarDropdownShadow:            inset 0px 4px 10px -4px $body-bg;
 
 $navbarButtonBackground:          lighten($navbarBackground, 3%);

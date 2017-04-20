@@ -185,7 +185,7 @@ func TestElasticserachQueryParser(t *testing.T) {
 
 			So(err, ShouldBeNil)
 			So(queryResult, ShouldNotBeNil)
-			So(len(queryResult.Series), ShouldEqual, 0)
+			So(len(queryResult.Series), ShouldEqual, 1)
 		})
 	})
 }

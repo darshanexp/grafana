@@ -28,6 +28,13 @@ $gray-7:           #fbfbfb;
 
 $white:            #fff;
 
+//----------------------------
+// MDL Colors (Riot)
+$navbar-color: $dark-3;
+$navbar-text-color: $gray-3;
+$material-white: #efefef;
+$navbarButtonBackgroundBorder: lighten($navbar-color, 10%);
+
 // Accent colors
 // -------------------------
 $blue:             	   	#2AB2E4;
@@ -54,8 +61,8 @@ $critical:              #EC2128;
 // Scaffolding
 // -------------------------
 
-$body-bg:  		  		    $white;
-$page-bg:  		  		    $white;
+$body-bg:  		  		    $material-white;
+$page-bg:  		  		    $material-white;
 $body-color:    		    $gray-1;
 $text-color:    		    $gray-1;
 $text-color-strong:	    $white;
@@ -232,14 +239,14 @@ $wellBackground:                  $gray-3;
 // -------------------------
 
 $navbarHeight:                    52px;
-$navbarBackgroundHighlight:       #f8f8f8;
-$navbarBackground:                #f8f8f8;
+$navbarBackgroundHighlight:       $navbar-color;
+$navbarBackground:                $navbar-color;
 $navbarBorder:                    1px solid $tight-form-border;
 
-$navbarText:                      #666;
-$navbarLinkColor:                 #666;
-$navbarLinkColorHover:            #333;
-$navbarLinkColorActive:           #555;
+$navbarText:                      $navbar-text-color;
+$navbarLinkColor:                 $navbar-text-color;
+$navbarLinkColorHover:            $navbar-text-color;
+$navbarLinkColorActive:           $navbar-text-color;
 $navbarLinkBackgroundHover:       transparent;
 $navbarLinkBackgroundActive:      darken($navbarBackground, 6.5%);
 $navbarDropdownShadow:            inset 0px 4px 7px -4px darken($body-bg, 20%);
