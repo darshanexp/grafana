@@ -1,10 +1,13 @@
 package sqlstore
 
 import (
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/go-xorm/xorm"
+
+	"fmt"
 
 	"github.com/grafana/grafana/pkg/bus"
 	"github.com/grafana/grafana/pkg/events"
@@ -260,6 +263,20 @@ func ChangeUserPassword(cmd *m.ChangeUserPasswordCommand) error {
 }
 
 func SetUsingOrg(cmd *m.SetUsingOrgCommand) error {
+	getOrgsForUserCmd := &m.GetUserOrgListQuery{UserId: cmd.UserId}
+	GetUserOrgList(getOrgsForUserCmd)
+
+	valid := false
+	for _, other := range getOrgsForUserCmd.Result {
+		if other.OrgId == cmd.OrgId {
+			valid = true
+		}
+	}
+
+	if !valid {
+		return fmt.Errorf("user does not belong to org")
+	}
+
 	return inTransaction(func(sess *xorm.Session) error {
 		user := m.User{}
 		sess.Id(cmd.UserId).Get(&user)
@@ -303,19 +320,24 @@ func GetUserOrgList(query *m.GetUserOrgListQuery) error {
 }
 
 func GetSignedInUser(query *m.GetSignedInUserQuery) error {
+	orgId := "u.org_id"
+	if query.OrgId > 0 {
+		orgId = strconv.FormatInt(query.OrgId, 10)
+	}
+
 	var rawSql = `SELECT
-	                u.id           as user_id,
-	                u.is_admin     as is_grafana_admin,
-	                u.email        as email,
-	                u.login        as login,
-									u.name         as name,
-									u.help_flags1  as help_flags1,
-	                org.name       as org_name,
-	                org_user.role  as org_role,
-	                org.id         as org_id
-	                FROM ` + dialect.Quote("user") + ` as u
-									LEFT OUTER JOIN org_user on org_user.org_id = u.org_id and org_user.user_id = u.id
-	                LEFT OUTER JOIN org on org.id = u.org_id `
+		u.id           as user_id,
+		u.is_admin     as is_grafana_admin,
+		u.email        as email,
+		u.login        as login,
+		u.name         as name,
+		u.help_flags1  as help_flags1,
+		org.name       as org_name,
+		org_user.role  as org_role,
+		org.id         as org_id
+		FROM ` + dialect.Quote("user") + ` as u
+		LEFT OUTER JOIN org_user on org_user.org_id = ` + orgId + ` and org_user.user_id = u.id
+		LEFT OUTER JOIN org on org.id = org_user.org_id `
 
 	sess := x.Table("user")
 	if query.UserId > 0 {
@@ -347,8 +369,12 @@ func SearchUsers(query *m.SearchUsersQuery) error {
 	query.Result = m.SearchUserQueryResult{
 		Users: make([]*m.UserSearchHitDTO, 0),
 	}
+	queryWithWildcards := "%" + query.Query + "%"
+
 	sess := x.Table("user")
-	sess.Where("email LIKE ?", query.Query+"%")
+	if query.Query != "" {
+		sess.Where("email LIKE ? OR name LIKE ? OR login like ?", queryWithWildcards, queryWithWildcards, queryWithWildcards)
+	}
 	offset := query.Limit * (query.Page - 1)
 	sess.Limit(query.Limit, offset)
 	sess.Cols("id", "email", "name", "login", "is_admin")
@@ -357,7 +383,12 @@ func SearchUsers(query *m.SearchUsersQuery) error {
 	}
 
 	user := m.User{}
-	count, err := x.Count(&user)
+
+	countSess := x.Table("user")
+	if query.Query != "" {
+		countSess.Where("email LIKE ? OR name LIKE ? OR login like ?", queryWithWildcards, queryWithWildcards, queryWithWildcards)
+	}
+	count, err := countSess.Count(&user)
 	query.Result.TotalCount = count
 	return err
 }

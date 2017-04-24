@@ -171,6 +171,7 @@ func upsertAlerts(existingAlerts []*m.Alert, cmd *m.SaveAlertsCommand, sess *xor
 			if alertToUpdate.ContainsUpdates(alert) {
 				alert.Updated = time.Now()
 				alert.State = alertToUpdate.State
+				sess.MustCols("message")
 				_, err := sess.Id(alert.Id).Update(alert)
 				if err != nil {
 					return err
@@ -238,6 +239,10 @@ func SetAlertState(cmd *m.SetAlertStateCommand) error {
 
 		if alert.State == m.AlertStatePaused {
 			return m.ErrCannotChangeStateOnPausedAlert
+		}
+
+		if alert.State == cmd.State {
+			return m.ErrRequiresNewState
 		}
 
 		alert.State = cmd.State

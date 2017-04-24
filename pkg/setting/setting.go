@@ -96,6 +96,7 @@ var (
 	LoginHint          string
 	DefaultTheme       string
 	DisableLoginForm   bool
+	DisableSignoutMenu bool
 
 	// Http auth
 	AdminUser     string
@@ -528,6 +529,7 @@ func NewConfigContext(args *CommandLineArgs) error {
 	// auth
 	auth := Cfg.Section("auth")
 	DisableLoginForm = auth.Key("disable_login_form").MustBool(false)
+	DisableSignoutMenu = auth.Key("disable_signout_menu").MustBool(false)
 
 	// anonymous access
 	AnonymousEnabled = Cfg.Section("auth.anonymous").Key("enabled").MustBool(false)
@@ -574,7 +576,7 @@ func NewConfigContext(args *CommandLineArgs) error {
 		log.Warn("require_email_validation is enabled but smpt is disabled")
 	}
 
-	GrafanaNetUrl = Cfg.Section("grafana_net").Key("url").MustString("https://grafana.net")
+	GrafanaNetUrl = Cfg.Section("grafana_net").Key("url").MustString("https://grafana.com")
 
 	imageUploadingSection := Cfg.Section("external_image_storage")
 	ImageUploadProvider = imageUploadingSection.Key("provider").MustString("internal")

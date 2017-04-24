@@ -15,6 +15,7 @@ class TimeSrv {
   oldRefresh: boolean;
   dashboard: any;
   timeAtLoad: any;
+  private autoRefreshBlocked: boolean;
 
   /** @ngInject **/
   constructor(private $rootScope, private $timeout, private $location, private timer, private contextSrv) {
@@ -23,6 +24,14 @@ class TimeSrv {
 
     $rootScope.$on('zoom-out', this.zoomOut.bind(this));
     $rootScope.$on('$routeUpdate', this.routeUpdated.bind(this));
+
+    document.addEventListener('visibilitychange', () => {
+      if (this.autoRefreshBlocked && document.visibilityState === 'visible') {
+        this.autoRefreshBlocked = false;
+
+        this.refreshDashboard();
+      }
+    });
   }
 
   init(dashboard) {
@@ -96,9 +105,13 @@ class TimeSrv {
         this.initTimeFromUrl();
         this.setTime(this.time, true);
       }
-    } else {
+    } else if (this.timeHasChangedSinceLoad()) {
       this.setTime(this.timeAtLoad, true);
     }
+  }
+
+  private timeHasChangedSinceLoad() {
+    return this.timeAtLoad.from !== this.time.from || this.timeAtLoad.to !== this.time.to;
   }
 
   setAutoRefresh(interval) {
@@ -116,9 +129,11 @@ class TimeSrv {
     }
 
     // update url
-    var params = this.$location.search();
-    params.refresh = interval;
-    this.$location.search(params);
+    if (interval) {
+      var params = this.$location.search();
+      params.refresh = interval;
+      this.$location.search(params);
+    }
   }
 
   refreshDashboard() {
@@ -131,6 +146,8 @@ class TimeSrv {
       this.startNextRefreshTimer(afterMs);
       if (this.contextSrv.isGrafanaVisible()) {
         this.refreshDashboard();
+      } else {
+        this.autoRefreshBlocked = true;
       }
     }, afterMs));
   }

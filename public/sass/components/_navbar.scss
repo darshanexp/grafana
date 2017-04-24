@@ -61,9 +61,9 @@
   position: relative;
   float: left;
   margin: 0;
-  border-right: 1px solid $tight-form-border;
+  border-right: 1px solid $navbarButtonBackgroundBorder;
   background-color: $navbarButtonBackground;
-  padding: 0.4rem 1.0rem 0.4rem 1rem;
+  padding: 0.8rem 1.0rem 0.4rem 1rem;
 
   .fa-caret-down {
     font-size: 70%;
@@ -84,10 +84,7 @@
 
   .navbar-brand-btn-background {
     display: inline-block;
-    border: 1px solid $body-bg;
     padding: 4px;
-    border-radius: 50%;
-    background: $iconContainerBackground;
     width: 40px;
     height: 40px;
   }
@@ -101,6 +98,24 @@
   }
 }
 
+.navbar-text {
+  color: darken($navbar-text-color, 5%);
+  font-size: 1.4em;
+  padding: 0rem 0rem 0rem 0rem;
+}
+
+.navbar-9box-btn {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  float: left;
+  display: block;
+  margin-top: 7px;
+  font-size: 1.4em;
+  font-size: $font-size-lg;
+  color:  darken($navbar-text-color, 5%);
+}
+
 .navbar-page-btn {
   text-overflow: ellipsis;
   overflow: hidden;
@@ -109,15 +124,15 @@
   display: block;
   margin: 0;
   font-size: 1.4em;
-  border-right: 1px solid $tight-form-border;
-  color: darken($link-color, 5%);
+  border-right: 1px solid $navbarButtonBackgroundBorder;
+  color: darken($navbar-text-color, 5%);
   background-color: $navbarButtonBackground;
   font-size: $font-size-lg;
-  padding: 1rem 1rem 0.7rem 1rem;
+  padding: 1rem 1rem 1.2rem 1rem;
 
   &:hover {
     background: $navbarButtonBackgroundHighlight;
-    color: $link-color;
+    color: darken($navbar-text-color, 20%);;
   }
 
   .fa-caret-down {
