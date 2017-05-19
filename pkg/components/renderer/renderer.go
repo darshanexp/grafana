@@ -66,12 +66,17 @@ func RenderToPng(params *RenderOpts) (string, error) {
 	}
 
 	url := fmt.Sprintf("%s://%s:%s/%s", setting.Protocol, localDomain, setting.HttpPort, params.Path)
-
+  rendererLog.Info("Rendering", "url", url)
+  
 	binPath, _ := filepath.Abs(filepath.Join(setting.PhantomDir, executable))
 	scriptPath, _ := filepath.Abs(filepath.Join(setting.PhantomDir, "render.js"))
 	pngPath, _ := filepath.Abs(filepath.Join(setting.ImagesDir, util.GetRandomString(20)))
 	pngPath = pngPath + ".png"
-
+  
+  rendererLog.Info("Rendering", "binPath", binPath)
+  rendererLog.Info("Rendering", "scriptPath", scriptPath)
+  rendererLog.Info("Rendering", "pngPath", pngPath)
+  
 	renderKey := middleware.AddRenderAuthKey(params.OrgId)
 	defer middleware.RemoveRenderAuthKey(renderKey)
 
