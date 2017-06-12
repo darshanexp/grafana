@@ -148,9 +148,9 @@ export class AlertTabCtrl {
       alert.conditions.push(this.buildDefaultCondition());
     }
 
-    alert.noDataState = alert.noDataState || 'no_data';
-    alert.executionErrorState = alert.executionErrorState || 'alerting';
-    alert.frequency = alert.frequency || '60s';
+    alert.noDataState = alert.noDataState || 'keep_state';
+    alert.executionErrorState = alert.executionErrorState || 'keep_state';
+    alert.frequency = alert.frequency || '180s';
     alert.handler = alert.handler || 1;
     alert.notifications = alert.notifications || [];
 
