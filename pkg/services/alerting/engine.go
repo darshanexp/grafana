@@ -87,8 +87,8 @@ func (e *Engine) runJobDispatcher(grafanaCtx context.Context) error {
 }
 
 var (
-	unfinishedWorkTimeout time.Duration = time.Second * 30
-	alertTimeout          time.Duration = time.Second * 180
+	unfinishedWorkTimeout time.Duration = time.Second * 5
+	alertTimeout          time.Duration = time.Second * 45
 )
 
 func (e *Engine) processJob(grafanaCtx context.Context, job *Job) error {
