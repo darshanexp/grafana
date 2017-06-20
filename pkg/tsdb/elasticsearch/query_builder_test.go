@@ -341,3 +341,68 @@ func TestElasticSearchQueryBuilder(t *testing.T) {
 		})
 	})
 }
+
+func TestElasticSearchQueryBuilderRespectsESVersions(t *testing.T) {
+  Convey("Test versioning specification in RequestModel", t, func() {
+    var testElasticsearchModelRequestJSON = `
+			{
+				"bucketAggs": [
+          {
+            "type": "terms",
+            "id": "4",
+            "settings": {
+              "order": "desc",
+              "orderBy": "_term",
+              "size": "10"
+            },
+            "field": "rfc190Scope"
+          },
+          {
+            "type": "date_histogram",
+            "id": "2",
+            "settings": {
+              "interval": "auto",
+              "min_doc_count": 0,
+              "trimEdges": 0
+            },
+            "field": "rfc460Timestamp"
+          }
+        ],
+				"query": "(test:query) AND (name:sample)",
+				"refId": "A",
+				"timeField": "timestamp"
+			}
+			`
+
+    // Non-versioned RequestModel should default to ES2
+    model := &RequestModel{}
+
+    err := json.Unmarshal([]byte(testElasticsearchModelRequestJSON), model)
+    So(err, ShouldBeNil)
+
+    testTimeRange := &tsdb.TimeRange{
+      From: "5m",
+      To:   "now",
+      Now:  time.Now(),
+    }
+
+    queryJSON, err := model.buildQueryJSON(testTimeRange)
+    So(err, ShouldBeNil)
+
+    So(queryJSON, ShouldContainSubstring, "filtered")
+
+    // Versioned ES5 should not use "filtered" keyword
+
+    model = &RequestModel{}
+
+    err = json.Unmarshal([]byte(testElasticsearchModelRequestJSON), model)
+    So(err, ShouldBeNil)
+
+    model.ESVersion = 5.0
+
+    queryJSON, err = model.buildQueryJSON(testTimeRange)
+    So(err, ShouldBeNil)
+
+    So(queryJSON, ShouldNotContainSubstring, "filtered")
+  })
+}

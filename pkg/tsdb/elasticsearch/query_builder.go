@@ -19,7 +19,7 @@ type TemplateQueryModel struct {
 	Model     *RequestModel
 }
 
-var queryTemplate = `
+var queryTemplateV2 = `
 {
 	"size": 0,
 	"query": {
@@ -43,6 +43,27 @@ var queryTemplate = `
 	},
 	"aggs": {{ . | formatAggregates }}
 }`
+
+var queryTemplateV5 = `
+{
+	"size": 0,
+	"query": {
+		"bool": {
+      "filter": [
+        {
+          "range": {{ . | formatTimeRange }}
+        }, {
+          "query_string": {
+            "analyze_wildcard": true,
+					  "query": {{ marshal .Model.Query }}
+          }
+        }
+      ]
+		}
+	},
+	"aggs": {{ . | formatAggregates }}
+}`
+
 
 func convertTimeToUnixNano(rangeTime string, now time.Time) string {
 	if rangeTime == "now" {
@@ -254,6 +275,10 @@ func (model *RequestModel) buildQueryJSON(timeRange *tsdb.TimeRange) (string, er
 		},
 	}
 
+  queryTemplate := queryTemplateV2
+  if (model.ESVersion >= 5) {
+    queryTemplate = queryTemplateV5
+  }
 	t, err := template.New("elasticsearchQuery").Funcs(funcMap).Parse(queryTemplate)
 	if err != nil {
 		return "", err
