@@ -343,8 +343,8 @@ func TestElasticSearchQueryBuilder(t *testing.T) {
 }
 
 func TestElasticSearchQueryBuilderRespectsESVersions(t *testing.T) {
-  Convey("Test versioning specification in RequestModel", t, func() {
-    var testElasticsearchModelRequestJSON = `
+	Convey("Test versioning specification in RequestModel", t, func() {
+		var testElasticsearchModelRequestJSON = `
 			{
 				"bucketAggs": [
           {
@@ -374,35 +374,35 @@ func TestElasticSearchQueryBuilderRespectsESVersions(t *testing.T) {
 			}
 			`
 
-    // Non-versioned RequestModel should default to ES2
-    model := &RequestModel{}
+		// Non-versioned RequestModel should default to ES2
+		model := &RequestModel{}
 
-    err := json.Unmarshal([]byte(testElasticsearchModelRequestJSON), model)
-    So(err, ShouldBeNil)
+		err := json.Unmarshal([]byte(testElasticsearchModelRequestJSON), model)
+		So(err, ShouldBeNil)
 
-    testTimeRange := &tsdb.TimeRange{
-      From: "5m",
-      To:   "now",
-      Now:  time.Now(),
-    }
+		testTimeRange := &tsdb.TimeRange{
+			From: "5m",
+			To:   "now",
+			Now:  time.Now(),
+		}
 
-    queryJSON, err := model.buildQueryJSON(testTimeRange)
-    So(err, ShouldBeNil)
+		queryJSON, err := model.buildQueryJSON(testTimeRange)
+		So(err, ShouldBeNil)
 
-    So(queryJSON, ShouldContainSubstring, "filtered")
+		So(queryJSON, ShouldContainSubstring, "filtered")
 
-    // Versioned ES5 should not use "filtered" keyword
+		// Versioned ES5 should not use "filtered" keyword
 
-    model = &RequestModel{}
+		model = &RequestModel{}
 
-    err = json.Unmarshal([]byte(testElasticsearchModelRequestJSON), model)
-    So(err, ShouldBeNil)
+		err = json.Unmarshal([]byte(testElasticsearchModelRequestJSON), model)
+		So(err, ShouldBeNil)
 
-    model.ESVersion = 5.0
+		model.ESVersion = 5.0
 
-    queryJSON, err = model.buildQueryJSON(testTimeRange)
-    So(err, ShouldBeNil)
+		queryJSON, err = model.buildQueryJSON(testTimeRange)
+		So(err, ShouldBeNil)
 
-    So(queryJSON, ShouldNotContainSubstring, "filtered")
-  })
+		So(queryJSON, ShouldNotContainSubstring, "filtered")
+	})
 }

@@ -64,7 +64,6 @@ var queryTemplateV5 = `
 	"aggs": {{ . | formatAggregates }}
 }`
 
-
 func convertTimeToUnixNano(rangeTime string, now time.Time) string {
 	if rangeTime == "now" {
 		rangeTime = "30s"
@@ -275,10 +274,10 @@ func (model *RequestModel) buildQueryJSON(timeRange *tsdb.TimeRange) (string, er
 		},
 	}
 
-  queryTemplate := queryTemplateV2
-  if (model.ESVersion >= 5) {
-    queryTemplate = queryTemplateV5
-  }
+	queryTemplate := queryTemplateV2
+	if model.ESVersion >= 5 {
+		queryTemplate = queryTemplateV5
+	}
 	t, err := template.New("elasticsearchQuery").Funcs(funcMap).Parse(queryTemplate)
 	if err != nil {
 		return "", err

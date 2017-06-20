@@ -23,7 +23,7 @@ type Metric struct {
 type RequestModel struct {
 	BucketAggregates []BucketAggregate `json:"bucketAggs"`
 	DatasourceType   string            `json:"dsType"`
-  ESVersion        float64           `json:"esVersion"`
+	ESVersion        float64           `json:"esVersion"`
 	Metrics          []Metric          `json:"metrics"`
 	Query            string            `json:"query"`
 	RefID            string            `json:"refId"`
