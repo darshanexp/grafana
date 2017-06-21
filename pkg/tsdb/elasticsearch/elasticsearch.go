@@ -124,6 +124,11 @@ func (e *ElasticsearchExecutor) buildRequest(queryInfo *tsdb.Query, timeRange *t
 		return nil, err
 	}
 
+	esRequestModel.ESVersion, err = queryInfo.DataSource.JsonData.Get("esVersion").Float64()
+	if err != nil {
+		return nil, err
+	}
+
 	esRequestJSON, err := esRequestModel.buildQueryJSON(timeRange)
 	if err != nil {
 		return nil, err
