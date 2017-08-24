@@ -137,9 +137,16 @@ func parseQueryResult(response []byte, preferredNames NameMap, resultFilter Filt
 
 	for id, series := range timeSeries {
 		if len(timeSeries) > 0 && id != "doc_count" || len(timeSeries) == 1 && id == "doc_count" {
+      // Remove all points that have null data for either coordinate value
+      nonNullPoints := make(tsdb.TimeSeriesPoints, 0)
+      for _, v := range series {
+        if (v[0].Ptr() != nil && v[1].Ptr() != nil) {
+          nonNullPoints = append(nonNullPoints, v)
+        }
+      }
 			ts := &tsdb.TimeSeries{
 				Name:   id,
-				Points: series,
+				Points: nonNullPoints,
 			}
 			queryRes.Series = append(queryRes.Series, ts)
 		}
