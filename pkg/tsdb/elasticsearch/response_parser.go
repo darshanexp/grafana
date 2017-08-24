@@ -152,6 +152,9 @@ func parseQueryResult(response []byte, preferredNames NameMap, resultFilter Filt
 		}
 	}
 
+  // Auto-cropping both ends for Riot specific HMP 2.0 per-minute calculations. We only want whole datapoints.
+  queryRes.Series = queryRes.Series[1:-1]
+
 	return queryRes, nil
 }
 
