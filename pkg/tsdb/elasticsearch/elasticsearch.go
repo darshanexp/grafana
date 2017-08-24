@@ -191,7 +191,6 @@ func (e *ElasticsearchExecutor) Execute(ctx context.Context, queries tsdb.QueryS
 		}
 
 		result.QueryResults[q.RefId], err = parseQueryResult(rBody, getPreferredNamesForQueries(q), getFilteredMetrics(q))
-    fmt.Printf("%+v\n", *(result.QueryResults[q.RefId].Series[0]))
 		if err != nil {
 			return result.WithError(err)
 		}
