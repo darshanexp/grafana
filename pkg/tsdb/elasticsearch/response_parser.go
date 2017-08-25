@@ -137,9 +137,25 @@ func parseQueryResult(response []byte, preferredNames NameMap, resultFilter Filt
 
 	for id, series := range timeSeries {
 		if len(timeSeries) > 0 && id != "doc_count" || len(timeSeries) == 1 && id == "doc_count" {
+			// Remove all points that have null data for either coordinate value
+			nonNullPoints := make(tsdb.TimeSeriesPoints, 0)
+			seenTimes := make(map[float64]bool)
+			for _, v := range series {
+				if v[0].Ptr() != nil && v[1].Ptr() != nil {
+					_, seenTime := seenTimes[v[1].Float64]
+					// Discard duplicate timestamps (Elasticsearch seems to return these occasionally). Important to do so before
+					// cropping.
+					if !seenTime {
+						nonNullPoints = append(nonNullPoints, v)
+						seenTimes[v[1].Float64] = true
+					}
+				}
+			}
+			// Auto-cropping both ends for Riot specific HMP 2.0 per-minute calculations. We only want whole datapoints.
+			nonNullPoints = nonNullPoints[1 : len(nonNullPoints)-1]
 			ts := &tsdb.TimeSeries{
 				Name:   id,
-				Points: series,
+				Points: nonNullPoints,
 			}
 			queryRes.Series = append(queryRes.Series, ts)
 		}
