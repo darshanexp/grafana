@@ -56,6 +56,10 @@ func getIndex(pattern string, interval string, timeRange *tsdb.TimeRange) string
 	}
 	indexDateFormat := indexParts[1]
 
+	if interval == "" {
+		return pattern
+	}
+
 	type TimeOperation struct {
 		StartOf   func(*moment.Moment) *moment.Moment
 		Operation func(*moment.Moment) *moment.Moment
@@ -101,10 +105,16 @@ func getIndex(pattern string, interval string, timeRange *tsdb.TimeRange) string
 }
 
 func (e *ElasticsearchExecutor) buildRequest(queryInfo *tsdb.Query, timeRange *tsdb.TimeRange) (*http.Request, error) {
-	indexInterval, err := queryInfo.DataSource.JsonData.Get("interval").String()
-	if err != nil {
-		return nil, err
+	indexIntervalJson := queryInfo.DataSource.JsonData.Get("interval")
+	var indexInterval = ""
+	if indexIntervalJson.Interface() != nil {
+		indexIntervalStr, err := indexIntervalJson.String()
+		if err != nil {
+			return nil, err
+		}
+		indexInterval = indexIntervalStr
 	}
+
 	index := getIndex(queryInfo.DataSource.Database, indexInterval, timeRange)
 
 	esRequestURL := fmt.Sprintf("%s/%s/_search", queryInfo.DataSource.Url, index)
