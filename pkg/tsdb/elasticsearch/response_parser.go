@@ -14,7 +14,6 @@ func joinMaps(left map[string]tsdb.TimeSeriesPoints, right map[string]tsdb.TimeS
 	for key, value := range left {
 		result[key] = value
 	}
-
 	for key, value := range right {
 		if _, ok := result[key]; ok {
 			for _, pt := range value {
@@ -28,7 +27,7 @@ func joinMaps(left map[string]tsdb.TimeSeriesPoints, right map[string]tsdb.TimeS
 	return result
 }
 
-func parseSubQueryResults(parentAggregationKey string, bucketlist BucketList, preferredNames NameMap, resultFilter FilterMap) (map[string]tsdb.TimeSeriesPoints, error) {
+func parseSubQueryResults(parentAggregationKey string, bucketAggregationKey string, bucketlist BucketList, preferredNames NameMap, resultFilter FilterMap) (map[string]tsdb.TimeSeriesPoints, string, error) {
 	timeSeries := map[string]tsdb.TimeSeriesPoints{}
 
 	for _, bucket := range bucketlist.Buckets {
@@ -37,12 +36,19 @@ func parseSubQueryResults(parentAggregationKey string, bucketlist BucketList, pr
 		aggregations := make(map[string]interface{})
 		err := json.Unmarshal(rawAggregation, &aggregations)
 		if err != nil {
-			return timeSeries, err
+			return timeSeries, "", err
 		}
 
 		metricKey := ""
 		docCount := 0.0
 		var valueRow [2]null.Float
+
+		if k, ok := aggregations["key"]; ok {
+			if v, ok := k.(string); ok {
+				bucketAggregationKey = v
+			}
+		}
+
 		for key, value := range aggregations {
 			switch value.(type) {
 			case string:
@@ -68,20 +74,31 @@ func parseSubQueryResults(parentAggregationKey string, bucketlist BucketList, pr
 
 					bucketBytes, err := json.Marshal(valueMap["buckets"])
 					if err != nil {
-						return timeSeries, err
+						return timeSeries, bucketAggregationKey, err
 					}
 
 					err = json.Unmarshal(bucketBytes, &buckets)
 					if err != nil {
-						return timeSeries, err
+						return timeSeries, bucketAggregationKey, err
 					}
 
+					mykey := key
+					if bucketAggregationKey != "" {
+						mykey = bucketAggregationKey
+						metricKey = mykey
+					} else {
+						mykey = fmt.Sprintf("%s%s", parentAggregationKey, mykey)
+					}
 					nestedBucketList := BucketList{
 						Buckets: buckets,
 					}
-					nestedTimeSeries, err := parseSubQueryResults(fmt.Sprintf("%s%s", parentAggregationKey, key), nestedBucketList, preferredNames, resultFilter)
+					nestedTimeSeries, tBucketKey, err := parseSubQueryResults(mykey, bucketAggregationKey, nestedBucketList, preferredNames, resultFilter)
+
+					if tBucketKey != "" {
+						bucketAggregationKey = tBucketKey
+					}
 					if err != nil {
-						return timeSeries, err
+						return timeSeries, bucketAggregationKey, err
 					}
 
 					timeSeries = joinMaps(timeSeries, nestedTimeSeries)
@@ -92,6 +109,9 @@ func parseSubQueryResults(parentAggregationKey string, bucketlist BucketList, pr
 
 			if metricKey != "" {
 				name := preferredNames.GetName(metricKey)
+				if bucketAggregationKey != "" {
+					name = bucketAggregationKey
+				}
 
 				if !resultFilter.Hide(metricKey) {
 					if _, ok := timeSeries[name]; !ok {
@@ -113,7 +133,7 @@ func parseSubQueryResults(parentAggregationKey string, bucketlist BucketList, pr
 		}
 	}
 
-	return timeSeries, nil
+	return timeSeries, "", nil
 }
 
 func parseQueryResult(response []byte, preferredNames NameMap, resultFilter FilterMap) (*tsdb.QueryResult, error) {
@@ -127,7 +147,8 @@ func parseQueryResult(response []byte, preferredNames NameMap, resultFilter Filt
 
 	timeSeries := map[string]tsdb.TimeSeriesPoints{}
 	for aggregationID, buckets := range esSearchResult.Aggregations {
-		tSeries, err := parseSubQueryResults(aggregationID, buckets, preferredNames, resultFilter)
+		tSeries, _, err := parseSubQueryResults(aggregationID, "", buckets, preferredNames, resultFilter)
+
 		if err != nil {
 			return nil, err
 		}
