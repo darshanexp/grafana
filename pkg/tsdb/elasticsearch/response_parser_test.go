@@ -263,10 +263,6 @@ func TestElasticserachQueryParser(t *testing.T) {
 
 		Convey("Parse ElasticSearch Nested Query Results With Filter", func() {
 			names := NameMap{}
-			names["4"] = Name{
-				Value: "Test Name",
-			}
-
 			queryResult, err := parseQueryResult([]byte(testRecursiveResponseJSON), names, FilterMap{"4": true})
 
 			So(err, ShouldBeNil)
