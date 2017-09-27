@@ -35,10 +35,14 @@ type Bucket []interface{}
 
 // BucketList is a simple struct to store es buckets in
 type BucketList struct {
-	Buckets Bucket
+	Buckets  Bucket
+	Key      string
+	DocCount string `json:"doc_count"`
 }
 
 // Response simple Elasticsearch response struct to access the buckets
 type Response struct {
 	Aggregations map[string]BucketList
+	Key          string
+	DocCount     string `json:"doc_count"`
 }
