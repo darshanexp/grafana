@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/grafana/grafana/pkg/components/null"
 	"github.com/grafana/grafana/pkg/tsdb"
@@ -136,6 +137,15 @@ func parseSubQueryResults(parentAggregationKey string, bucketAggregationKey stri
 	return timeSeries, "", nil
 }
 
+func cleanupName(name string) string {
+	parts := strings.Split(name, ".")
+	if len(parts) <= 1 {
+		return name
+	} else {
+		return strings.Join(parts[1:], ".")
+	}
+}
+
 func parseQueryResult(response []byte, preferredNames NameMap, resultFilter FilterMap) (*tsdb.QueryResult, error) {
 	queryRes := tsdb.NewQueryResult()
 
@@ -177,7 +187,7 @@ func parseQueryResult(response []byte, preferredNames NameMap, resultFilter Filt
 				nonNullPoints = nonNullPoints[1 : len(nonNullPoints)-1]
 			}
 			ts := &tsdb.TimeSeries{
-				Name:   id,
+				Name:   cleanupName(id),
 				Points: nonNullPoints,
 			}
 			queryRes.Series = append(queryRes.Series, ts)
