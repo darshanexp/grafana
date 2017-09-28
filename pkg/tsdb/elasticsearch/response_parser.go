@@ -45,7 +45,7 @@ func parseSubQueryResults(parentAggregationKey string, bucketAggregationKey stri
 
 		if k, ok := aggregations["key"]; ok {
 			if v, ok := k.(string); ok {
-				bucketAggregationKey = v
+				bucketAggregationKey = fmt.Sprintf("%s.%s", parentAggregationKey, v)
 			}
 		}
 
