@@ -231,6 +231,60 @@ var testWildcardResponseJSON = `
 }
 `
 
+var testResponseNullDataJSON = `
+{
+  "took": 1588,
+  "timed_out": false,
+  "_shards": {
+    "total": 2250,
+    "successful": 2250,
+    "failed": 0
+  },
+  "hits": {
+    "total": 0,
+    "max_score": 0,
+    "hits": []
+  },
+  "aggregations": {
+    "2": {
+      "buckets": [
+        {
+          "key_as_string": "1487020955000",
+          "key": 1487020955000,
+          "doc_count": 0,
+          "1": {
+            "value": null
+          }
+        },
+        {
+          "key_as_string": "1487021010000",
+          "key": 1487021010000,
+          "doc_count": 0,
+          "1": {
+            "value": null
+          }
+        },
+        {
+          "key_as_string": "1487021180000",
+          "key": 1487021180000,
+          "doc_count": 0,
+          "1": {
+            "value": null
+          }
+        },
+        {
+          "key_as_string": "1487021210000",
+          "key": 1487021210000,
+          "doc_count": 0,
+          "1": {
+            "value": null
+          }
+        }
+      ]
+    }
+  }
+}`
+
 var testMultiBucketResponse = `{"took":36,"timed_out":false,"_shards":{"total":20,"successful":20,"failed":0},"hits":{"total":114,"max_score":0.0,"hits":[]},"aggregations":{"4":{"doc_count_error_upper_bound":0,"sum_other_doc_count":0,"buckets":[{"key":"builtin.general.enabled_instance_count","doc_count":114,"6":{"doc_count_error_upper_bound":0,"sum_other_doc_count":0,"buckets":[{"key":"las2","doc_count":12,"7":{"doc_count_error_upper_bound":0,"sum_other_doc_count":0,"buckets":[{"key":"cacti","doc_count":4,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":1,"1":{"value":0.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":1,"1":{"value":0.0},"5":{"value":0.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":0.0},"5":{"value":0.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":1,"1":{"value":0.0},"5":{"value":0.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"cauth","doc_count":4,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":1,"1":{"value":0.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":1,"1":{"value":0.0},"5":{"value":0.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":0.0},"5":{"value":0.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":1,"1":{"value":0.0},"5":{"value":0.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"nxlog","doc_count":4,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":1,"1":{"value":1.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}}]}},{"key":"pdx3","doc_count":8,"7":{"doc_count_error_upper_bound":0,"sum_other_doc_count":0,"buckets":[{"key":"monitor","doc_count":8,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":2,"1":{"value":1.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":2,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":2,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":2,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}}]}},{"key":"pdx32","doc_count":62,"7":{"doc_count_error_upper_bound":0,"sum_other_doc_count":7,"buckets":[{"key":"cacti","doc_count":3,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":1,"1":{"value":1.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":0,"1":{"value":0.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"cauth","doc_count":7,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":1,"1":{"value":1.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":2,"1":{"value":2.0},"5":{"value":1.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":2,"1":{"value":2.0},"5":{"value":1.5}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.6666666666666667}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.5}}]}},{"key":"dns","doc_count":6,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":1,"1":{"value":0.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":2,"1":{"value":1.0},"5":{"value":0.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":1.0},"5":{"value":0.5}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":2,"1":{"value":1.0},"5":{"value":0.6666666666666666}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"exabgp","doc_count":6,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":0,"1":{"value":0.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":2,"1":{"value":2.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":2,"1":{"value":2.0},"5":{"value":2.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":2,"1":{"value":2.0},"5":{"value":2.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"maas","doc_count":3,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":0,"1":{"value":0.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":1,"1":{"value":1.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"ntp","doc_count":6,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":1,"1":{"value":1.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":2,"1":{"value":2.0},"5":{"value":1.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":2,"1":{"value":2.0},"5":{"value":1.3333333333333333}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"nxlog","doc_count":7,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":1,"1":{"value":1.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":2,"1":{"value":2.0},"5":{"value":1.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":2,"1":{"value":2.0},"5":{"value":1.5}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":2,"1":{"value":2.0},"5":{"value":1.6666666666666667}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"proxy","doc_count":7,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":2,"1":{"value":0.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":2,"1":{"value":0.0},"5":{"value":0.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":0.0},"5":{"value":0.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":2,"1":{"value":0.0},"5":{"value":0.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"pulp","doc_count":6,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":0,"1":{"value":0.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":2,"1":{"value":2.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":2,"1":{"value":2.0},"5":{"value":2.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":2,"1":{"value":2.0},"5":{"value":2.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"rims","doc_count":4,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":1,"1":{"value":0.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":1,"1":{"value":0.0},"5":{"value":0.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":0.0},"5":{"value":0.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":1,"1":{"value":0.0},"5":{"value":0.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}}]}},{"key":"pdx33","doc_count":32,"7":{"doc_count_error_upper_bound":0,"sum_other_doc_count":0,"buckets":[{"key":"cacti","doc_count":3,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":0,"1":{"value":0.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":1,"1":{"value":1.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"cauth","doc_count":4,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":1,"1":{"value":1.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"dns","doc_count":3,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":0,"1":{"value":0.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":1,"1":{"value":1.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"exabgp","doc_count":4,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":1,"1":{"value":0.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":1,"1":{"value":0.0},"5":{"value":0.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":0.0},"5":{"value":0.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":1,"1":{"value":0.0},"5":{"value":0.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"maas","doc_count":3,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":1,"1":{"value":1.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":0,"1":{"value":0.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"ntp","doc_count":3,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":0,"1":{"value":0.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":1,"1":{"value":1.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"nxlog","doc_count":3,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":0,"1":{"value":0.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":1,"1":{"value":1.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"proxy","doc_count":3,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":0,"1":{"value":0.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":1,"1":{"value":1.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"pulp","doc_count":3,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":0,"1":{"value":0.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":1,"1":{"value":1.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}},{"key":"tacacs","doc_count":3,"2":{"buckets":[{"key_as_string":"1506613590000","key":1506613590000,"doc_count":0,"1":{"value":0.0}},{"key_as_string":"1506613620000","key":1506613620000,"doc_count":1,"1":{"value":1.0}},{"key_as_string":"1506613650000","key":1506613650000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613680000","key":1506613680000,"doc_count":1,"1":{"value":1.0},"5":{"value":1.0}},{"key_as_string":"1506613710000","key":1506613710000,"doc_count":0,"1":{"value":0.0}}]}}]}}]}}]}},"status":200}`
 
 func TestElasticserachQueryParser(t *testing.T) {
@@ -270,6 +324,16 @@ func TestElasticserachQueryParser(t *testing.T) {
 			So(err, ShouldBeNil)
 			So(queryResult, ShouldNotBeNil)
 			So(len(queryResult.Series), ShouldEqual, 2)
+		})
+
+		Convey("Parse ElasticSearch All Null Results", func() {
+			names := NameMap{}
+			queryResult, err := parseQueryResult([]byte(testResponseNullDataJSON), names, FilterMap{})
+
+			So(err, ShouldBeNil)
+			So(queryResult, ShouldNotBeNil)
+
+			So(len(queryResult.Series), ShouldEqual, 0)
 		})
 	})
 }

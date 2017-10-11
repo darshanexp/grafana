@@ -67,7 +67,10 @@ func parseSubQueryResults(parentAggregationKey string, bucketAggregationKey stri
 				}
 			case map[string]interface{}:
 				valueMap := value.(map[string]interface{})
-				if valueMap["value"] != nil {
+				if val, ok := valueMap["value"]; ok {
+					if val == nil {
+						continue
+					}
 					metricKey = key
 					valueRow[0] = parseValue(valueMap["value"].(float64))
 				} else if valueMap["buckets"] != nil {
@@ -108,7 +111,7 @@ func parseSubQueryResults(parentAggregationKey string, bucketAggregationKey stri
 				fmt.Printf("Unknown Type: %v %v\n", key, value)
 			}
 
-			if metricKey != "" {
+			if metricKey != "" && docCount > 0 {
 				name := preferredNames.GetName(metricKey)
 				if bucketAggregationKey != "" {
 					name = bucketAggregationKey
@@ -123,7 +126,7 @@ func parseSubQueryResults(parentAggregationKey string, bucketAggregationKey stri
 			}
 		}
 
-		if metricKey == "" {
+		if metricKey == "" && docCount > 0 {
 			name := "doc_count"
 
 			if _, ok := timeSeries[name]; !ok {
