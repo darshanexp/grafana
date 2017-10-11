@@ -111,7 +111,7 @@ func parseSubQueryResults(parentAggregationKey string, bucketAggregationKey stri
 				fmt.Printf("Unknown Type: %v %v\n", key, value)
 			}
 
-			if metricKey != "" && docCount != 0 {
+			if metricKey != "" && docCount > 0 {
 				name := preferredNames.GetName(metricKey)
 				if bucketAggregationKey != "" {
 					name = bucketAggregationKey
@@ -126,7 +126,7 @@ func parseSubQueryResults(parentAggregationKey string, bucketAggregationKey stri
 			}
 		}
 
-		if metricKey == "" && docCount != 0 {
+		if metricKey == "" && docCount > 0 {
 			name := "doc_count"
 
 			if _, ok := timeSeries[name]; !ok {
