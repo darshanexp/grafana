@@ -241,7 +241,7 @@ var testResponseNullDataJSON = `
     "failed": 0
   },
   "hits": {
-    "total": 4,
+    "total": 0,
     "max_score": 0,
     "hits": []
   },
