@@ -50,7 +50,6 @@ func parseSubQueryResults(parentAggregationKey string, bucketAggregationKey stri
 			}
 		}
 
-		valueExists := false
 		for key, value := range aggregations {
 			switch value.(type) {
 			case string:
@@ -72,8 +71,6 @@ func parseSubQueryResults(parentAggregationKey string, bucketAggregationKey stri
 					if val == nil {
 						continue
 					}
-					valueExists = true
-
 					metricKey = key
 					valueRow[0] = parseValue(valueMap["value"].(float64))
 				} else if valueMap["buckets"] != nil {
@@ -114,7 +111,7 @@ func parseSubQueryResults(parentAggregationKey string, bucketAggregationKey stri
 				fmt.Printf("Unknown Type: %v %v\n", key, value)
 			}
 
-			if metricKey != "" || valueExists {
+			if metricKey != "" && docCount != 0 {
 				name := preferredNames.GetName(metricKey)
 				if bucketAggregationKey != "" {
 					name = bucketAggregationKey
@@ -129,7 +126,7 @@ func parseSubQueryResults(parentAggregationKey string, bucketAggregationKey stri
 			}
 		}
 
-		if metricKey == "" && valueExists {
+		if metricKey == "" && docCount != 0 {
 			name := "doc_count"
 
 			if _, ok := timeSeries[name]; !ok {
