@@ -1,15 +1,10 @@
 package riot
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"testing"
-	"time"
 
-	"github.com/grafana/grafana/pkg/components/simplejson"
-	"github.com/grafana/grafana/pkg/models"
-	"github.com/grafana/grafana/pkg/tsdb"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -169,53 +164,5 @@ func TestGmetricsdParseResponse(t *testing.T) {
 			So(len(tsdbQueryResult.Series[0].Points), ShouldEqual, 8)
 			So(tsdbQueryResult.Series[0].Name, ShouldEqual, fmt.Sprintf("%s [%s]", history.History.PrettyName, history.History.Host.Hostname))
 		})
-	})
-}
-
-func TestGmetricsdExecutorConstructor(t *testing.T) {
-	Convey("Test Parse GMetricsdExecutor", t, func() {
-		Convey("Construct", func() {
-			ds := &models.DataSource{
-				BasicAuth:         true,
-				BasicAuthUser:     "test-user",
-				BasicAuthPassword: "test-password",
-			}
-
-			e, err := NewGMetricsdExecutor(ds)
-			So(err, ShouldBeNil)
-
-			var ctx context.Context
-			result := e.Execute(ctx, nil, nil)
-			So(result.Error, ShouldNotBeNil)
-
-			modelJson, _ := simplejson.NewJson([]byte(`{}`))
-
-			jsonData, _ := simplejson.NewJson([]byte(`{}`))
-			queryContext := &tsdb.QueryContext{
-				Queries: tsdb.QuerySlice{
-					{
-						RefId: "A",
-						DataSource: &models.DataSource{
-							Url:               "http://test",
-							Id:                1,
-							JsonData:          jsonData,
-							BasicAuth:         true,
-							BasicAuthUser:     "test-user",
-							BasicAuthPassword: "test-password",
-						},
-						Model: modelJson,
-					},
-				},
-				TimeRange: &tsdb.TimeRange{
-					From: "5m",
-					To:   "now",
-					Now:  time.Now(),
-				},
-			}
-
-			result = e.Execute(ctx, queryContext.Queries, queryContext)
-			So(result.Error, ShouldNotBeNil)
-		})
-
 	})
 }

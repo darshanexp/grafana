@@ -9,25 +9,17 @@ import (
 	"net/url"
 	"strconv"
 
+	"golang.org/x/net/context/ctxhttp"
+
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/tsdb"
 )
 
 type GMetricsdExecutor struct {
-	*models.DataSource
-	HttpClient *http.Client
 }
 
-func NewGMetricsdExecutor(dsInfo *models.DataSource) (tsdb.Executor, error) {
-	client, err := dsInfo.GetHttpClient()
-	if err != nil {
-		return nil, err
-	}
-
-	return &GMetricsdExecutor{
-		DataSource: dsInfo,
-		HttpClient: client,
-	}, nil
+func NewGMetricsdExecutor(dsInfo *models.DataSource) (tsdb.TsdbQueryEndpoint, error) {
+	return &GMetricsdExecutor{}, nil
 }
 
 func (e *GMetricsdExecutor) buildRequest(queryInfo *tsdb.Query, timeRange *tsdb.TimeRange) (*http.Request, error) {
@@ -65,37 +57,38 @@ func (e *GMetricsdExecutor) buildRequest(queryInfo *tsdb.Query, timeRange *tsdb.
 	return req, nil
 }
 
-func (e *GMetricsdExecutor) Execute(ctx context.Context, queries tsdb.QuerySlice, context *tsdb.QueryContext) *tsdb.BatchResult {
-	result := &tsdb.BatchResult{}
-	result.QueryResults = make(map[string]*tsdb.QueryResult)
+func (e *GMetricsdExecutor) Query(ctx context.Context, dsInfo *models.DataSource, queryContext *tsdb.TsdbQuery) (*tsdb.Response, error) {
+	result := &tsdb.Response{}
+	result.Results = make(map[string]*tsdb.QueryResult)
 
-	if context == nil {
-		return result.WithError(fmt.Errorf("Nil Context provided to GMetricsdExecutor"))
-	}
-
-	for _, q := range context.Queries {
+	for _, q := range queryContext.Queries {
 		if q.DataSource == nil {
-			return result.WithError(fmt.Errorf("Invalid (nil) DataSource Provided"))
+			return nil, fmt.Errorf("Invalid (nil) DataSource Provided")
 		}
 
-		request, err := e.buildRequest(q, context.TimeRange)
+		request, err := e.buildRequest(q, queryContext.TimeRange)
 		if err != nil {
-			return result.WithError(err)
+			return nil, err
 		}
 
-		resp, err := e.HttpClient.Do(request)
+		httpClient, err := dsInfo.GetHttpClient()
 		if err != nil {
-			return result.WithError(err)
+			return nil, err
+		}
+
+		resp, err := ctxhttp.Do(ctx, httpClient, request)
+		if err != nil {
+			return nil, err
 		}
 		defer resp.Body.Close()
 
 		rBody, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return result.WithError(fmt.Errorf("Failed to read response body (%s): %s", strconv.Quote(string(rBody)), err))
+			return nil, fmt.Errorf("Failed to read response body (%s): %s", strconv.Quote(string(rBody)), err)
 		}
 
 		if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
-			return result.WithError(fmt.Errorf("Failed to get metrics: %s (%s)", strconv.Quote(string(rBody)), resp.Status))
+			return nil, fmt.Errorf("Failed to get metrics: %s (%s)", strconv.Quote(string(rBody)), resp.Status)
 		}
 
 		gmetricsdHistory := &GMetricsdHistoryResponse{}
@@ -103,11 +96,11 @@ func (e *GMetricsdExecutor) Execute(ctx context.Context, queries tsdb.QuerySlice
 
 		parsedQueryResult, err := gmetricsdHistory.ToTsdbQueryResult()
 		if err != nil {
-			return result.WithError(fmt.Errorf("Failed to parse gmetricsd history response: %s", err.Error()))
+			return nil, fmt.Errorf("Failed to parse gmetricsd history response: %s", err.Error())
 		}
 		parsedQueryResult.RefId = q.RefId
-		result.QueryResults[q.RefId] = parsedQueryResult
+		result.Results[q.RefId] = parsedQueryResult
 	}
 
-	return result
+	return result, nil
 }
