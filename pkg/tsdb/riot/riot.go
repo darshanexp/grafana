@@ -13,6 +13,6 @@ var (
 func init() {
 	riotlog = log.New("tsdb.riot")
 
-	tsdb.RegisterExecutor("riotelasticsearch", elasticsearch.NewElasticsearchExecutor)
-	tsdb.RegisterExecutor("gmetricsd", NewGMetricsdExecutor)
+	tsdb.RegisterTsdbQueryEndpoint("riotelasticsearch", elasticsearch.NewElasticsearchExecutor)
+	tsdb.RegisterTsdbQueryEndpoint("gmetricsd", NewGMetricsdExecutor)
 }

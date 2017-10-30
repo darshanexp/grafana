@@ -1,24 +1,35 @@
 ///<reference path="../../../headers/common.d.ts" />
 
 import _ from 'lodash';
+import ResponseParser from './response_parser';
 
 export class MysqlDatasource {
   id: any;
   name: any;
+  responseParser: ResponseParser;
 
   /** @ngInject **/
   constructor(instanceSettings, private backendSrv, private $q, private templateSrv) {
     this.name = instanceSettings.name;
     this.id = instanceSettings.id;
+    this.responseParser = new ResponseParser(this.$q);
   }
 
   interpolateVariable(value) {
     if (typeof value === 'string') {
-      return '\"' + value + '\"';
+      return '\'' + value + '\'';
+    }
+
+    if (typeof value === 'number') {
+      return value;
     }
 
     var quotedValues = _.map(value, function(val) {
-      return '\"' + val + '\"';
+      if (typeof value === 'number') {
+        return value;
+      }
+
+      return '\'' + val + '\'';
     });
     return  quotedValues.join(',');
   }
@@ -49,7 +60,53 @@ export class MysqlDatasource {
         to: options.range.to.valueOf().toString(),
         queries: queries,
       }
-    }).then(this.processQueryResult.bind(this));
+    }).then(this.responseParser.processQueryResult);
+  }
+
+  annotationQuery(options) {
+    if (!options.annotation.rawQuery) {
+      return this.$q.reject({message: 'Query missing in annotation definition'});
+    }
+
+    const query = {
+      refId: options.annotation.name,
+      datasourceId: this.id,
+      rawSql: this.templateSrv.replace(options.annotation.rawQuery, options.scopedVars, this.interpolateVariable),
+      format: 'table',
+    };
+
+    return this.backendSrv.datasourceRequest({
+      url: '/api/tsdb/query',
+      method: 'POST',
+      data: {
+        from: options.range.from.valueOf().toString(),
+        to: options.range.to.valueOf().toString(),
+        queries: [query],
+      }
+    }).then(data => this.responseParser.transformAnnotationResponse(options, data));
+  }
+
+  metricFindQuery(query, optionalOptions) {
+    let refId = 'tempvar';
+    if (optionalOptions && optionalOptions.variable && optionalOptions.variable.name) {
+      refId = optionalOptions.variable.name;
+    }
+
+    const interpolatedQuery = {
+      refId: refId,
+      datasourceId: this.id,
+      rawSql: this.templateSrv.replace(query, {}, this.interpolateVariable),
+      format: 'table',
+    };
+
+    return this.backendSrv.datasourceRequest({
+      url: '/api/tsdb/query',
+      method: 'POST',
+      data: {
+        queries: [interpolatedQuery],
+      }
+    })
+    .then(data => this.responseParser.parseMetricFindQueryResult(refId, data));
   }
 
   testDatasource() {
@@ -69,49 +126,15 @@ export class MysqlDatasource {
         }],
       }
     }).then(res => {
-      return { status: "success", message: "Database Connection OK", title: "Success" };
+      return { status: "success", message: "Database Connection OK"};
     }).catch(err => {
       console.log(err);
       if (err.data && err.data.message) {
-        return { status: "error", message: err.data.message, title: "Error" };
+        return { status: "error", message: err.data.message };
       } else {
-        return { status: "error", message: err.status, title: "Error" };
+        return { status: "error", message: err.status };
       }
     });
-  }
-
-  processQueryResult(res) {
-    var data = [];
-
-    if (!res.data.results) {
-      return {data: data};
-    }
-
-    for (let key in res.data.results) {
-      let queryRes = res.data.results[key];
-
-      if (queryRes.series) {
-        for (let series of queryRes.series) {
-          data.push({
-            target: series.name,
-            datapoints: series.points,
-            refId: queryRes.refId,
-            meta: queryRes.meta,
-          });
-        }
-      }
-
-      if (queryRes.tables) {
-        for (let table of queryRes.tables) {
-          table.type = 'table';
-          table.refId = queryRes.refId;
-          table.meta = queryRes.meta;
-          data.push(table);
-        }
-      }
-    }
-
-    return {data: data};
   }
 }
 

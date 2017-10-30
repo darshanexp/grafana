@@ -23,24 +23,15 @@ var (
 
 type ElasticsearchExecutor struct {
 	*models.DataSource
-	HttpClient *http.Client
 }
 
-func NewElasticsearchExecutor(dsInfo *models.DataSource) (tsdb.Executor, error) {
-	client, err := dsInfo.GetHttpClient()
-	if err != nil {
-		return nil, err
-	}
-
-	return &ElasticsearchExecutor{
-		DataSource: dsInfo,
-		HttpClient: client,
-	}, nil
+func NewElasticsearchExecutor(dsInfo *models.DataSource) (tsdb.TsdbQueryEndpoint, error) {
+	return &ElasticsearchExecutor{}, nil
 }
 
 func init() {
 	eslog = log.New("tsdb.elasticsearch")
-	tsdb.RegisterExecutor("elasticsearch", NewElasticsearchExecutor)
+	tsdb.RegisterTsdbQueryEndpoint("elasticsearch", NewElasticsearchExecutor)
 }
 
 func getIndex(pattern string, interval string, timeRange *tsdb.TimeRange) string {
@@ -163,52 +154,53 @@ func (e *ElasticsearchExecutor) buildRequest(queryInfo *tsdb.Query, timeRange *t
 	return req, nil
 }
 
-func (e *ElasticsearchExecutor) Execute(ctx context.Context, queries tsdb.QuerySlice, context *tsdb.QueryContext) *tsdb.BatchResult {
-	result := &tsdb.BatchResult{}
-	result.QueryResults = make(map[string]*tsdb.QueryResult)
+func (e *ElasticsearchExecutor) Query(ctx context.Context, dsInfo *models.DataSource, queryContext *tsdb.TsdbQuery) (*tsdb.Response, error) {
+	result := &tsdb.Response{}
+	result.Results = make(map[string]*tsdb.QueryResult)
 
-	if context == nil {
-		return result.WithError(fmt.Errorf("Nil Context provided to ElasticsearchExecutor"))
-	}
-
-	for _, q := range context.Queries {
+	for _, q := range queryContext.Queries {
 		if q.DataSource == nil {
-			return result.WithError(fmt.Errorf("Invalid (nil) DataSource Provided"))
+			return nil, fmt.Errorf("Invalid (nil) DataSource Provided")
 		}
 
 		if q.DataSource.JsonData == nil {
-			return result.WithError(fmt.Errorf("Invalid (nil) JsonData Provided"))
+			return nil, fmt.Errorf("Invalid (nil) JsonData Provided")
 		}
 
-		esRequest, err := e.buildRequest(q, context.TimeRange)
+		esRequest, err := e.buildRequest(q, queryContext.TimeRange)
 		if err != nil {
-			return result.WithError(err)
+			return nil, err
 		}
 
-		resp, err := e.HttpClient.Do(esRequest)
+		httpClient, err := dsInfo.GetHttpClient()
 		if err != nil {
-			return result.WithError(err)
+			return nil, err
+		}
+
+		resp, err := httpClient.Do(esRequest)
+		if err != nil {
+			return nil, err
 		}
 		defer resp.Body.Close()
 
 		rBody, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return result.WithError(fmt.Errorf("Failed to read response body (%s): %s", strconv.Quote(string(rBody)), err))
+			return nil, fmt.Errorf("Failed to read response body (%s): %s", strconv.Quote(string(rBody)), err)
 		}
 
 		if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
-			return result.WithError(fmt.Errorf("Failed to get metrics: %s (%s)", strconv.Quote(string(rBody)), resp.Status))
+			return nil, fmt.Errorf("Failed to get metrics: %s (%s)", strconv.Quote(string(rBody)), resp.Status)
 		}
 
-		result.QueryResults[q.RefId], err = parseQueryResult(rBody, getPreferredNamesForQueries(q), getFilteredMetrics(q))
+		result.Results[q.RefId], err = parseQueryResult(rBody, getPreferredNamesForQueries(q), getFilteredMetrics(q))
 		if err != nil {
-			return result.WithError(err)
+			return result, err
 		}
 
-		result.QueryResults[q.RefId].RefId = q.RefId
+		result.Results[q.RefId].RefId = q.RefId
 	}
 
-	return result
+	return result, nil
 }
 
 func getPreferredNamesForQueries(query *tsdb.Query) NameMap {

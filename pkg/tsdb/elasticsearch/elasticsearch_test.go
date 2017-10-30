@@ -1,12 +1,10 @@
 package elasticsearch
 
 import (
-	"context"
 	"testing"
 	"time"
 
 	"github.com/grafana/grafana/pkg/components/simplejson"
-	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/tsdb"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -109,51 +107,5 @@ func TestElasticsearchGetIndexList(t *testing.T) {
 			index := getIndex("logstash-test", "", timeRange)
 			So(index, ShouldEqual, "logstash-test")
 		})
-	})
-}
-
-func TestElasticSearchConstructor(t *testing.T) {
-	Convey("Test ElasticSearch Constructor ", t, func() {
-		ds := &models.DataSource{
-			BasicAuth:         true,
-			BasicAuthUser:     "test-user",
-			BasicAuthPassword: "test-password",
-		}
-
-		e, err := NewElasticsearchExecutor(ds)
-		So(err, ShouldBeNil)
-
-		var ctx context.Context
-		result := e.Execute(ctx, nil, nil)
-		So(result.Error, ShouldNotBeNil)
-
-		modelJson, _ := simplejson.NewJson([]byte(`{}`))
-
-		jsonData, _ := simplejson.NewJson([]byte(`{"esVersion":2, "interval": "Daily"}`))
-		queryContext := &tsdb.QueryContext{
-			Queries: tsdb.QuerySlice{
-				{
-					RefId: "A",
-					DataSource: &models.DataSource{
-						Url:               "http://test",
-						Database:          "[test-index-]YYYY.MM.DD",
-						Id:                1,
-						JsonData:          jsonData,
-						BasicAuth:         true,
-						BasicAuthUser:     "test-user",
-						BasicAuthPassword: "test-password",
-					},
-					Model: modelJson,
-				},
-			},
-			TimeRange: &tsdb.TimeRange{
-				From: "5m",
-				To:   "now",
-				Now:  time.Now(),
-			},
-		}
-
-		result = e.Execute(ctx, queryContext.Queries, queryContext)
-		So(result.Error, ShouldNotBeNil)
 	})
 }
