@@ -14,6 +14,7 @@ import (
 	"github.com/grafana/grafana/pkg/log"
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/tsdb"
+	"github.com/grafana/grafana/pkg/tsdb/riot"
 	"github.com/leibowitz/moment"
 )
 
@@ -157,6 +158,15 @@ func (e *ElasticsearchExecutor) buildRequest(queryInfo *tsdb.Query, timeRange *t
 func (e *ElasticsearchExecutor) Query(ctx context.Context, dsInfo *models.DataSource, queryContext *tsdb.TsdbQuery) (*tsdb.Response, error) {
 	result := &tsdb.Response{}
 	result.Results = make(map[string]*tsdb.QueryResult)
+
+	rtpOk, err := riot.IsRTPHealthy()
+	if err != nil {
+		eslog.Warn("Error Getting RTP Circuit Breaker Status: %s\n", string(aggString), err.Error())
+	}
+
+	if !rtpOk {
+		return nil, fmt.Errorf("RTP Is Currently Unhealthy, Raising an Execution Error.")
+	}
 
 	for _, q := range queryContext.Queries {
 		if q.DataSource == nil {
