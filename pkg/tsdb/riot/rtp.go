@@ -29,9 +29,9 @@ type HealthStatus struct {
 }
 
 func IsRTPHealthy() (bool, error) {
-	circuitBreaker := os.Getenv("RTP_CIRCUIT_BREAKER_ENDPOINT")
+	circuitBreakerURL := os.Getenv("RTP_CIRCUIT_BREAKER_ENDPOINT")
 
-	resp, err := http.Get(fmt.Sprintf("%s/%s", circuitBreaker, circuitBreakerAPIEndpoint))
+	resp, err := http.Get(fmt.Sprintf("%s/%s", circuitBreakerURL, circuitBreakerAPIEndpoint))
 	if err != nil {
 		return true, fmt.Errorf("Failed to get RTP Circuit Breaker Health, assuming true for health.")
 	}
