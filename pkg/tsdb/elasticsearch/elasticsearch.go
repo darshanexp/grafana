@@ -13,8 +13,8 @@ import (
 
 	"github.com/grafana/grafana/pkg/log"
 	"github.com/grafana/grafana/pkg/models"
+	"github.com/grafana/grafana/pkg/services/alerting/riot"
 	"github.com/grafana/grafana/pkg/tsdb"
-	"github.com/grafana/grafana/pkg/tsdb/riot"
 	"github.com/leibowitz/moment"
 )
 
@@ -161,7 +161,7 @@ func (e *ElasticsearchExecutor) Query(ctx context.Context, dsInfo *models.DataSo
 
 	rtpOk, err := riot.IsRTPHealthy()
 	if err != nil {
-		eslog.Warn("Error Getting RTP Circuit Breaker Status: %s\n", string(aggString), err.Error())
+		eslog.Warn("Error Getting RTP Circuit Breaker Status: %s\n", err.Error())
 	}
 
 	if !rtpOk {
