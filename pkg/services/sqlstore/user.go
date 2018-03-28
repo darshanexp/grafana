@@ -315,6 +315,7 @@ func GetUserProfile(query *m.GetUserProfileQuery) error {
 	}
 
 	query.Result = m.UserProfileDTO{
+		Id:             user.Id,
 		Name:           user.Name,
 		Email:          user.Email,
 		Login:          user.Login,
@@ -350,6 +351,7 @@ func GetSignedInUser(query *m.GetSignedInUserQuery) error {
 		u.name           as name,
 		u.help_flags1    as help_flags1,
 		u.last_seen_at   as last_seen_at,
+		(SELECT COUNT(*) FROM org_user where org_user.user_id = u.id) as org_count,
 		org.name         as org_name,
 		org_user.role    as org_role,
 		org.id           as org_id
@@ -400,7 +402,7 @@ func SearchUsers(query *m.SearchUsersQuery) error {
 	}
 
 	if query.Query != "" {
-		whereConditions = append(whereConditions, "(email LIKE ? OR name LIKE ? OR login like ?)")
+		whereConditions = append(whereConditions, "(email "+dialect.LikeStr()+" ? OR name "+dialect.LikeStr()+" ? OR login "+dialect.LikeStr()+" ?)")
 		whereParams = append(whereParams, queryWithWildcards, queryWithWildcards, queryWithWildcards)
 	}
 
@@ -438,6 +440,10 @@ func DeleteUser(cmd *m.DeleteUserCommand) error {
 		deletes := []string{
 			"DELETE FROM star WHERE user_id = ?",
 			"DELETE FROM " + dialect.Quote("user") + " WHERE id = ?",
+			"DELETE FROM org_user WHERE user_id = ?",
+			"DELETE FROM dashboard_acl WHERE user_id = ?",
+			"DELETE FROM preferences WHERE user_id = ?",
+			"DELETE FROM team_member WHERE user_id = ?",
 		}
 
 		for _, sql := range deletes {

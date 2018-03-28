@@ -14,14 +14,14 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 
+	"github.com/grafana/grafana/pkg/log"
 	"github.com/grafana/grafana/pkg/metrics"
-	"github.com/grafana/grafana/pkg/models"
-	"github.com/grafana/grafana/pkg/services/sqlstore"
 	"github.com/grafana/grafana/pkg/setting"
 
 	_ "github.com/grafana/grafana/pkg/services/alerting/conditions"
 	_ "github.com/grafana/grafana/pkg/services/alerting/notifiers"
 	_ "github.com/grafana/grafana/pkg/tsdb/cloudwatch"
+	_ "github.com/grafana/grafana/pkg/tsdb/elasticsearch"
 	_ "github.com/grafana/grafana/pkg/tsdb/graphite"
 	_ "github.com/grafana/grafana/pkg/tsdb/influxdb"
 	_ "github.com/grafana/grafana/pkg/tsdb/mysql"
@@ -29,11 +29,10 @@ import (
 	_ "github.com/grafana/grafana/pkg/tsdb/postgres"
 	_ "github.com/grafana/grafana/pkg/tsdb/prometheus"
 	_ "github.com/grafana/grafana/pkg/tsdb/riot"
-	_ "github.com/grafana/grafana/pkg/tsdb/elasticsearch"
 	_ "github.com/grafana/grafana/pkg/tsdb/testdata"
 )
 
-var version = "4.6.0"
+var version = "5.0.0"
 var commit = "NA"
 var buildstamp string
 var build_date string
@@ -42,9 +41,6 @@ var configFile = flag.String("config", "", "path to config file")
 var homePath = flag.String("homepath", "", "path to grafana install/home path, defaults to working directory")
 var pidFile = flag.String("pidfile", "", "path to pid file")
 var exitChan = make(chan int)
-
-func init() {
-}
 
 func main() {
 	v := flag.Bool("v", false, "prints current version and exits")
@@ -85,17 +81,28 @@ func main() {
 	setting.BuildStamp = buildstampInt64
 
 	metrics.M_Grafana_Version.WithLabelValues(version).Set(1)
-
+	shutdownCompleted := make(chan int)
 	server := NewGrafanaServer()
-	server.Start()
+
+	go listenToSystemSignals(server, shutdownCompleted)
+
+	go func() {
+		code := 0
+		if err := server.Start(); err != nil {
+			log.Error2("Startup failed", "error", err)
+			code = 1
+		}
+
+		exitChan <- code
+	}()
+
+	code := <-shutdownCompleted
+	log.Info2("Grafana shutdown completed.", "code", code)
+	log.Close()
+	os.Exit(code)
 }
 
-func initSql() {
-	sqlstore.NewEngine()
-	sqlstore.EnsureAdminUser()
-}
-
-func listenToSystemSignals(server models.GrafanaServer) {
+func listenToSystemSignals(server *GrafanaServerImpl, shutdownCompleted chan int) {
 	signalChan := make(chan os.Signal, 1)
 	ignoreChan := make(chan os.Signal, 1)
 	code := 0
@@ -105,10 +112,12 @@ func listenToSystemSignals(server models.GrafanaServer) {
 
 	select {
 	case sig := <-signalChan:
-		// Stops trace if profiling has been enabled
-		trace.Stop()
+		trace.Stop() // Stops trace if profiling has been enabled
 		server.Shutdown(0, fmt.Sprintf("system signal: %s", sig))
+		shutdownCompleted <- 0
 	case code = <-exitChan:
+		trace.Stop() // Stops trace if profiling has been enabled
 		server.Shutdown(code, "startup error")
+		shutdownCompleted <- code
 	}
 }
