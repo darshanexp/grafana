@@ -64,22 +64,10 @@ var queryTemplateV5 = `
 	"aggs": {{ . | formatAggregates }}
 }`
 
-func convertTimeToUnixNano(rangeTime string, now time.Time) string {
-	if rangeTime == "now" {
-		rangeTime = "30s"
-	}
-
-	duration, err := time.ParseDuration(fmt.Sprintf("-%s", rangeTime))
-	if err != nil {
-		return err.Error()
-	}
-
-	return strconv.FormatInt(now.Add(duration).UnixNano()/1000/1000, 10)
-}
-
 func formatTimeRange(data TemplateQueryModel) string {
-	to := convertTimeToUnixNano(data.TimeRange.To, data.TimeRange.Now)
-	from := convertTimeToUnixNano(data.TimeRange.From, data.TimeRange.Now)
+
+	from := strconv.FormatInt(data.TimeRange.GetFromAsMsEpoch(), 10)
+	to := strconv.FormatInt(data.TimeRange.GetToAsMsEpoch(), 10)
 
 	return fmt.Sprintf(`
 		{
@@ -172,14 +160,17 @@ func createDateHistogramAgg(bAgg *BucketAggregate, timeRange *tsdb.TimeRange, de
 	result.Set("field", defaultTimeField)
 
 	extendedBounds := simplejson.New()
-	extendedBounds.Set("min", convertTimeToUnixNano(timeRange.From, timeRange.Now))
-	extendedBounds.Set("max", convertTimeToUnixNano(timeRange.To, timeRange.Now))
+	extendedBounds.Set("min", strconv.FormatInt(timeRange.GetFromAsMsEpoch(), 10))
+	extendedBounds.Set("max", strconv.FormatInt(timeRange.GetToAsMsEpoch(), 10))
 	result.Set("extended_bounds", extendedBounds)
 
 	result.Set("format", "epoch_millis")
 
 	if interval, _ := result.Get("interval").String(); interval == "auto" {
-		result.Set("interval", tsdb.CalculateInterval(timeRange).Text)
+		intervalCalculator := tsdb.NewIntervalCalculator(&tsdb.IntervalOptions{})
+		interval := intervalCalculator.Calculate(timeRange, time.Millisecond)
+
+		result.Set("interval", interval.Text)
 	}
 
 	return result

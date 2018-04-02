@@ -6,10 +6,11 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/grafana/grafana/pkg/tsdb"
 	. "github.com/smartystreets/goconvey/convey"
+	"strconv"
+	"time"
 )
 
 func testElasticSearchResponse(requestJSON string, expectedElasticSearchRequestJSON string) {
@@ -35,14 +36,14 @@ func testElasticSearchResponse(requestJSON string, expectedElasticSearchRequestJ
 	expectedElasticSearchRequestJSON = strings.Replace(
 		expectedElasticSearchRequestJSON,
 		"<FROM_TIMESTAMP>",
-		convertTimeToUnixNano(testTimeRange.From, testTimeRange.Now),
+		strconv.FormatInt(testTimeRange.GetFromAsMsEpoch(), 10),
 		-1,
 	)
 
 	expectedElasticSearchRequestJSON = strings.Replace(
 		expectedElasticSearchRequestJSON,
 		"<TO_TIMESTAMP>",
-		convertTimeToUnixNano(testTimeRange.To, testTimeRange.Now),
+		strconv.FormatInt(testTimeRange.GetToAsMsEpoch(), 10),
 		-1,
 	)
 
@@ -51,7 +52,7 @@ func testElasticSearchResponse(requestJSON string, expectedElasticSearchRequestJ
 
 	result := reflect.DeepEqual(queryExpectedJSONInterface, queryJSONInterface)
 	if !result {
-		fmt.Printf("ERROR: \n%#v \n!= \n%#v", expectedElasticSearchRequestJSON, queryJSON)
+		fmt.Printf("ERROR: \n%v \n!= \n%v", expectedElasticSearchRequestJSON, queryJSON)
 	}
 	So(result, ShouldBeTrue)
 
@@ -383,7 +384,6 @@ func TestElasticSearchQueryBuilderRespectsESVersions(t *testing.T) {
 		testTimeRange := &tsdb.TimeRange{
 			From: "5m",
 			To:   "now",
-			Now:  time.Now(),
 		}
 
 		queryJSON, err := model.buildQueryJSON(testTimeRange)
