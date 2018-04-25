@@ -148,7 +148,7 @@ func (e *ElasticsearchExecutor) buildRequest(queryInfo *tsdb.Query, timeRange *t
 	if err != nil {
 		return nil, err
 	}
-
+	req.Header.Add("Content-Type", "application/json")
 	if queryInfo.DataSource.BasicAuth {
 		req.SetBasicAuth(queryInfo.DataSource.BasicAuthUser, queryInfo.DataSource.BasicAuthPassword)
 	}
