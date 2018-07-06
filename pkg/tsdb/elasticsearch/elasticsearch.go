@@ -148,7 +148,9 @@ func (e *ElasticsearchExecutor) buildRequest(queryInfo *tsdb.Query, timeRange *t
 	if err != nil {
 		return nil, err
 	}
+
 	req.Header.Add("Content-Type", "application/json")
+
 	if queryInfo.DataSource.BasicAuth {
 		req.SetBasicAuth(queryInfo.DataSource.BasicAuthUser, queryInfo.DataSource.BasicAuthPassword)
 	}
@@ -159,8 +161,7 @@ func (e *ElasticsearchExecutor) buildRequest(queryInfo *tsdb.Query, timeRange *t
 func (e *ElasticsearchExecutor) Query(ctx context.Context, dsInfo *models.DataSource, queryContext *tsdb.TsdbQuery) (*tsdb.Response, error) {
 	result := &tsdb.Response{}
 	result.Results = make(map[string]*tsdb.QueryResult)
-
-	rtpOk, err := riot.IsRTPHealthy()
+	rtpOk, err := riot.IsRTPHealthy(dsInfo.Url)
 	if err != nil {
 		eslog.Warn("Error Getting RTP Circuit Breaker Status: %s\n", err.Error())
 	}
