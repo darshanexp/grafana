@@ -99,7 +99,8 @@ func (c *EvalContext) GetDashboardUID() (*m.DashboardRef, error) {
 	return c.dashboardRef, nil
 }
 
-const urlFormat = "%s?fullscreen=true&edit=true&tab=alert&panelId=%d&orgId=%d"
+const urlFormat = "%s?fullscreen=true&edit=true&tab=alert&panelId=%d&orgId=%d&from=%d&to=%d"
+const AlertUrlTimeFrame = time.Minute * 30
 
 func (c *EvalContext) GetRuleUrl() (string, error) {
 	if c.IsTestRun {
@@ -109,7 +110,9 @@ func (c *EvalContext) GetRuleUrl() (string, error) {
 	if ref, err := c.GetDashboardUID(); err != nil {
 		return "", err
 	} else {
-		return fmt.Sprintf(urlFormat, m.GetFullDashboardUrl(ref.Uid, ref.Slug), c.Rule.PanelId, c.Rule.OrgId), nil
+		from := c.StartTime.Add(-1 * AlertUrlTimeFrame).Unix()
+		to := time.Now().Unix()
+		return fmt.Sprintf(urlFormat, m.GetFullDashboardUrl(ref.Uid, ref.Slug), c.Rule.PanelId, c.Rule.OrgId, from, to), nil
 	}
 }
 
