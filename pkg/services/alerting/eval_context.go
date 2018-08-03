@@ -110,8 +110,8 @@ func (c *EvalContext) GetRuleUrl() (string, error) {
 	if ref, err := c.GetDashboardUID(); err != nil {
 		return "", err
 	} else {
-		from := c.StartTime.Add(-1 * AlertUrlTimeFrame).Unix()
-		to := time.Now().Unix()
+		from := c.StartTime.Add(-1*AlertUrlTimeFrame).UnixNano() / int64(time.Millisecond)
+		to := time.Now().UnixNano() / int64(time.Millisecond)
 		return fmt.Sprintf(urlFormat, m.GetFullDashboardUrl(ref.Uid, ref.Slug), c.Rule.PanelId, c.Rule.OrgId, from, to), nil
 	}
 }
