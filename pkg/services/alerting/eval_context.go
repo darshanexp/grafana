@@ -125,8 +125,7 @@ func (c *EvalContext) GetFromToAsMilliseconds() (int64, int64) {
 	var from, to time.Time
 
 	for _, cond := range c.Rule.Conditions {
-		hebe := cond.From()
-		queryWindow, err := time.ParseDuration(hebe)
+		queryWindow, err := time.ParseDuration(cond.From())
 		if err == nil && queryWindow > window {
 			window = queryWindow
 		}
