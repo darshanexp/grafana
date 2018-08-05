@@ -42,4 +42,6 @@ type ConditionResult struct {
 
 type Condition interface {
 	Eval(result *EvalContext) (*ConditionResult, error)
+	From() string
+	To() string
 }
