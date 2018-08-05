@@ -9,6 +9,7 @@ import (
 	"github.com/grafana/grafana/pkg/log"
 	m "github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/setting"
+	"strings"
 )
 
 type EvalContext struct {
@@ -100,7 +101,6 @@ func (c *EvalContext) GetDashboardUID() (*m.DashboardRef, error) {
 }
 
 const urlFormat = "%s?fullscreen=true&edit=true&tab=alert&panelId=%d&orgId=%d&from=%d&to=%d"
-const AlertUrlTimeFrame = time.Minute * 30
 
 func (c *EvalContext) GetRuleUrl() (string, error) {
 	if c.IsTestRun {
@@ -110,10 +110,53 @@ func (c *EvalContext) GetRuleUrl() (string, error) {
 	if ref, err := c.GetDashboardUID(); err != nil {
 		return "", err
 	} else {
-		from := c.StartTime.Add(-1*AlertUrlTimeFrame).UnixNano() / int64(time.Millisecond)
-		to := time.Now().UnixNano() / int64(time.Millisecond)
+		from, to := c.GetFromToAsMilliseconds()
 		return fmt.Sprintf(urlFormat, m.GetFullDashboardUrl(ref.Uid, ref.Slug), c.Rule.PanelId, c.Rule.OrgId, from, to), nil
 	}
+}
+
+const gapDuration = time.Minute * 30
+const maxSlide = time.Hour*24*2 + gapDuration // Two days + gap duration
+const maxDuration time.Duration = 1<<63 - 1
+
+func (c *EvalContext) GetFromToAsMilliseconds() (int64, int64) {
+	toSlide := maxDuration
+	window := 0 * time.Minute
+	var from, to time.Time
+
+	for _, cond := range c.Rule.Conditions {
+		hebe := cond.From()
+		queryWindow, err := time.ParseDuration(hebe)
+		if err == nil && queryWindow > window {
+			window = queryWindow
+		}
+		if strings.Contains(cond.To(), "now-") {
+			end := strings.Replace(cond.To(), "now-", "", -1)
+			endSlide, err := time.ParseDuration(end)
+			if err != nil {
+				endSlide = maxDuration
+			}
+			if endSlide < toSlide {
+				toSlide = endSlide
+			}
+		}
+	}
+
+	if toSlide == maxDuration {
+		toSlide = 0
+	}
+
+	totalSlide := window + toSlide + gapDuration
+	if totalSlide > maxSlide {
+		totalSlide = maxSlide
+	}
+
+	from = c.StartTime.Add(-1 * totalSlide)
+	to = c.StartTime.Add(-1 * toSlide)
+	toMillis := func(aTime time.Time) int64 {
+		return aTime.UnixNano() / int64(time.Millisecond)
+	}
+	return toMillis(from), toMillis(to)
 }
 
 func (c *EvalContext) GetNewState() m.AlertStateType {

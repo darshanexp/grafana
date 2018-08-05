@@ -14,6 +14,14 @@ func (f *FakeCondition) Eval(context *EvalContext) (*ConditionResult, error) {
 	return &ConditionResult{}, nil
 }
 
+func (f *FakeCondition) From() string {
+	return "5m"
+}
+
+func (f *FakeCondition) To() string {
+	return "now"
+}
+
 func TestAlertRuleModel(t *testing.T) {
 	Convey("Testing alert rule", t, func() {
 
