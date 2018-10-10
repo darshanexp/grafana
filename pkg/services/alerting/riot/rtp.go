@@ -38,6 +38,7 @@ func IsRTPHealthy(dataSourceUrl string) (bool, error) {
 	circuitBreakerURL := os.Getenv(RTP_CIRCUIT_BREAKER_ENDPOINT)
 	url, err := url.Parse(dataSourceUrl)
 	if err != nil {
+		ConstructMetric("rtp.circuit.breaker.error.datasource_failed", 1).Send()
 		return true, fmt.Errorf("Failed to process RTP Circuit Breaker Health, assuming true for health. Cannot parse datasource url %s", dataSourceUrl)
 	}
 
@@ -48,17 +49,27 @@ func IsRTPHealthy(dataSourceUrl string) (bool, error) {
 
 	resp, err := http.Get(fmt.Sprintf("%s/%s", circuitBreakerURL, circuitBreakerAPIEndpoint))
 	if err != nil {
+		ConstructMetric("rtp.circuit.breaker.error.api_failed", 1).Send()
 		return true, fmt.Errorf("Failed to get RTP Circuit Breaker Health, assuming true for health.")
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		ConstructMetric("rtp.circuit.breaker.error.api_response_read_failed", 1).Send()
 		return true, fmt.Errorf("Failed to get RTP Circuit Breaker Response Body, assuming true for health.")
 	}
 	rtpHealthByCluster := HealthByCluster{}
 	err = json.Unmarshal(body, &rtpHealthByCluster)
 	if err != nil {
+		ConstructMetric("rtp.circuit.breaker.error.json_parse_failed", 1).Send()
 		return true, fmt.Errorf("Failed to parse RTP Circuit Breaker Response, assuming true for health.")
 	}
-	return rtpHealthByCluster[host] == nil || rtpHealthByCluster[host].Status != HealthDegraded, nil
+	ok := rtpHealthByCluster[host] == nil || rtpHealthByCluster[host].Status != HealthDegraded
+
+	if ok {
+		ConstructMetric("rtp.circuit.breaker.error.breaker_ok", 1).Send()
+	} else {
+		ConstructMetric("rtp.circuit.breaker.error.breaker_flipped", 1).Send()
+	}
+	return ok, nil
 }
