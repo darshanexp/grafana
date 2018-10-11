@@ -24,13 +24,15 @@ type Metric struct {
 func ConstructMetric(name string, value interface{}) Metric {
 	hostname := os.Getenv("RC_HOSTNAME")
 
-	scope := fmt.Sprintf("%s.%s.%s", os.Getenv("RC_ENVIRONMENT"), os.Getenv("RC_DATACENTER"), os.Getenv("RC_SHARD"))
+	scope := fmt.Sprintf("%s.%s.%s.telemetry.grafana", os.Getenv("RC_ENVIRONMENT"), os.Getenv("RC_DATACENTER"), os.Getenv("RC_SHARD"))
+
+	port := os.Getenv("GF_SERVER_HTTP_PORT")
 
 	return Metric{
 		Name:      name,
 		Value:     value,
 		Hostname:  hostname,
-		Instance:  "grafana",
+		Instance:  port,
 		Scope:     scope,
 		Timestamp: time.Now(),
 	}
@@ -41,6 +43,7 @@ func (m Metric) Send() error {
 	metrics := []Metric{m}
 	payloadBytes, err := json.Marshal(metrics)
 	if err != nil {
+		fmt.Printf("Not sending metric: %s: %s", m.Name, err.Error())
 		return err
 	}
 	body := bytes.NewReader(payloadBytes)
@@ -49,6 +52,7 @@ func (m Metric) Send() error {
 	if metricURL != "" {
 		req, err := http.NewRequest("POST", metricURL, body)
 		if err != nil {
+			fmt.Printf("Not sending metric: %s: %s", m.Name, err.Error())
 			return err
 		}
 		req.Header.Set("Content-Type", "application/json")
@@ -56,9 +60,14 @@ func (m Metric) Send() error {
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
+			fmt.Printf("Not sending metric: %s: %s", m.Name, err.Error())
 			return err
 		}
 		defer resp.Body.Close()
+	} else {
+		err := fmt.Errorf("RTP_COLLECTOR_METRIC_ENDPOINT not defined, metrics not being sent")
+		fmt.Printf("Not sending metric: %s: %s", m.Name, err.Error())
+		return err
 	}
 
 	return nil
