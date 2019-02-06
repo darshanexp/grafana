@@ -3,6 +3,7 @@ import { describe, beforeEach, it, expect, sinon, angularMocks } from 'test/lib/
 import helpers from 'test/specs/helpers';
 import '../time_srv';
 import moment from 'moment';
+import { DEFAULT_MIN_INTERVAL_SECONDS } from '../timepicker/utils';
 
 describe('timeSrv', function() {
   var ctx = new helpers.ServiceTestContext();
@@ -89,27 +90,41 @@ describe('timeSrv', function() {
     });
 
     it('should restore refresh for absolute time range', function() {
-      _dashboard.refresh = '30s';
+      _dashboard.refresh = '70s';
 
       ctx.service.setTime({ from: '2011-01-01', to: '2015-01-01' });
-      expect(_dashboard.refresh).to.be('30s');
+      expect(_dashboard.refresh).to.be('70s');
     });
 
     it('should restore refresh after relative time range is set', function() {
-      _dashboard.refresh = '10s';
+      _dashboard.refresh = '70s';
       ctx.service.setTime({
         from: moment([2011, 1, 1]),
         to: moment([2015, 1, 1]),
       });
       expect(_dashboard.refresh).to.be(false);
       ctx.service.setTime({ from: '2011-01-01', to: 'now' });
-      expect(_dashboard.refresh).to.be('10s');
+      expect(_dashboard.refresh).to.be('70s');
     });
 
     it('should keep refresh after relative time range is changed and now delay exists', function() {
+      _dashboard.refresh = '70s';
+      ctx.service.setTime({ from: 'now-1h', to: 'now-70s' });
+      expect(_dashboard.refresh).to.be('70s');
+    });
+  });
+
+  describe('setAutoRefresh', function() {
+    it('should set the refresh to the minimum threshold when interval is below min threshold', function() {
       _dashboard.refresh = '10s';
-      ctx.service.setTime({ from: 'now-1h', to: 'now-10s' });
-      expect(_dashboard.refresh).to.be('10s');
+      ctx.service.setAutoRefresh('30s');
+      expect(_dashboard.refresh).to.be(`${DEFAULT_MIN_INTERVAL_SECONDS}s`);
+    });
+
+    it('should set the refresh to the provided interval when above min threshold', function() {
+      _dashboard.refresh = '10s';
+      ctx.service.setAutoRefresh('90s');
+      expect(_dashboard.refresh).to.be('90s');
     });
   });
 });

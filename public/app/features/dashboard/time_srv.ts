@@ -3,6 +3,7 @@ import _ from 'lodash';
 import coreModule from 'app/core/core_module';
 import kbn from 'app/core/utils/kbn';
 import * as dateMath from 'app/core/utils/datemath';
+import { isAboveMinThresholdSeconds, DEFAULT_MIN_INTERVAL_SECONDS } from './timepicker/utils';
 
 class TimeSrv {
   time: any;
@@ -113,7 +114,14 @@ class TimeSrv {
   setAutoRefresh(interval) {
     this.dashboard.refresh = interval;
     this.cancelNextRefresh();
+
     if (interval) {
+      // Validate that the interval is above our threshold
+      if (!isAboveMinThresholdSeconds(interval)) {
+        interval = `${DEFAULT_MIN_INTERVAL_SECONDS}s`;
+        this.dashboard.refresh = interval;
+      }
+
       var intervalMs = kbn.interval_to_ms(interval);
 
       this.refreshTimer = this.timer.register(
